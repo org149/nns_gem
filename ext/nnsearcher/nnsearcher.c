@@ -27,15 +27,14 @@ static VALUE t_init(VALUE self, VALUE dotes)
   int dot_count = NUM2INT(ary_count);
   int counter = 0;
   int index = 0;
-  int iter = 0;
   
   if(GLOBAL_INIT){
     free(p_dotes);    
     p_dotes = malloc(dot_count * (sizeof(VALUE)+1));
   }else{
+    GLOBAL_INIT = 1;
     p_dotes = (point_data *)malloc(dot_count * (sizeof(VALUE)+1));
   }
-  global_dot_count = dot_count;
   while ( dot_count > 0 ){
     funcall_result = rb_ary_entry(dotes, index);
     index++;
@@ -55,6 +54,7 @@ static VALUE t_init(VALUE self, VALUE dotes)
       break;
     }
   }
+  global_dot_count = --counter;
   if (!GLOBAL_INIT) GLOBAL_INIT = !GLOBAL_INIT;
   return self;
 }
