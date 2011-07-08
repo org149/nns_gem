@@ -87,14 +87,16 @@ static VALUE t_search(VALUE self, VALUE lng, VALUE lat)
   neigh_l.id = Qnil;
   int i;
   int j = 0;
-  while(p_dotes[j].lng < lng) j++;
+  while(p_dotes[j].lat < lat) j++;
   int center = j;
   int m; int n;
   for(n=0;n<j;n++){
-    if(min_dist < abs(p_dotes[j-n].lng-lng)) break;
+    printf("DOT: %f, %f", NUM2DBL(p_dotes[j-n].lng), NUM2DBL(p_dotes[j-n].lng));
+    if(min_dist < abs(p_dotes[j-n].lat-lat)) break;
     work_dist = ext_gcd(NUM2DBL(lng), NUM2DBL(lat), NUM2DBL(p_dotes[j-n].lng), NUM2DBL(p_dotes[j-n].lat));
     if(work_dist < min_dist){
       min_dist = work_dist;
+      printf("\n\nMIN DIST: %f", min_dist);
       neigh_l = p_dotes[j-n];
     }
   }
@@ -102,10 +104,12 @@ static VALUE t_search(VALUE self, VALUE lng, VALUE lat)
   min_dist = MAX_DIST;
   for(m=j;m<global_dot_count;m++)
   {
-    if(min_dist < abs(p_dotes[m].lng-lng)) break;
+    printf("DOTR: %f, %f", NUM2DBL(p_dotes[j-n].lat), NUM2DBL(p_dotes[j-n].lat));
+    if(min_dist < abs(p_dotes[m].lat-lat)) break;
     work_dist = ext_gcd(NUM2DBL(lng), NUM2DBL(lat), NUM2DBL(p_dotes[m].lng), NUM2DBL(p_dotes[m].lat));
     if(work_dist < min_dist){
       min_dist = work_dist;
+      printf("\n\nMIN DIST: %f", min_dist);
       neigh_r = p_dotes[m];
     }
   }
