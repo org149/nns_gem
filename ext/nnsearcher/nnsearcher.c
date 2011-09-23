@@ -158,7 +158,7 @@ static VALUE t_search(VALUE self, VALUE lng, VALUE lat)
 
 static VALUE t_passed(VALUE self)
 {
-  printf("PASSED: %d", cities_passed);
+  //printf("PASSED: %d", cities_passed);
   return INT2NUM(cities_passed);
 }
 
