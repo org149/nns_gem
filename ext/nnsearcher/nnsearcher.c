@@ -106,7 +106,6 @@ static VALUE t_search(VALUE self, VALUE lng, VALUE lat)
   // CityCoord.nnsearcher.nearest_neighbour 12,12
   while((double)NUM2INT(p_dotes[j].lat)/10000.0 < (double)NUM2DBL(lat)){
    //printf("\nCOMPARING: [%lf] [%lf]\n", ((double)NUM2INT(p_dotes[j].lat)/10000.0), (double)NUM2DBL(lat));
-   cities_passed++;
    j++;
   //printf("\n J = %d", j);
   if(j>=global_dot_count - 1) break;
@@ -159,6 +158,7 @@ static VALUE t_search(VALUE self, VALUE lng, VALUE lat)
 
 static VALUE t_passed(VALUE self)
 {
+  printf("PASSED: %d", cities_passed);
   return INT2NUM(cities_passed);
 }
 
