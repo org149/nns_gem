@@ -21,6 +21,7 @@ VALUE NNSearcher = Qnil;
 static point_data *p_dotes;
 int global_dot_count;
 int GLOBAL_INIT = 0;
+int cities_passed = 0;
 
 static VALUE t_init(VALUE self, VALUE dotes)
 {
@@ -97,7 +98,7 @@ static VALUE t_search(VALUE self, VALUE lng, VALUE lat)
   neigh_l.id = Qnil;
   int i;
   int j = 0;
-
+  cities_passed = 0;
   //int ii;
   //printf("\nPRINT ARR:");
   //for(ii=0;ii<=30;ii++)
@@ -105,6 +106,7 @@ static VALUE t_search(VALUE self, VALUE lng, VALUE lat)
   // CityCoord.nnsearcher.nearest_neighbour 12,12
   while((double)NUM2INT(p_dotes[j].lat)/10000.0 < (double)NUM2DBL(lat)){
    //printf("\nCOMPARING: [%lf] [%lf]\n", ((double)NUM2INT(p_dotes[j].lat)/10000.0), (double)NUM2DBL(lat));
+   cities_passed++;
    j++;
   //printf("\n J = %d", j);
   if(j>=global_dot_count - 1) break;
@@ -115,6 +117,7 @@ static VALUE t_search(VALUE self, VALUE lng, VALUE lat)
     //printf("\nNC MIN DST: %lf", min_dist);
     //printf("\n\nN: %d, J: %d, GDC: %d", n,j,global_dot_count);
     //printf("\nEXPLORING DOT L: %d, %d", NUM2INT(p_dotes[j-n].lng),NUM2INT(p_dotes[j-n].lat));
+    cities_passed++;
     if ( min_dist < ext_gcd(0, NUM2DBL(lat), 0, NUM2INT(p_dotes[j-n].lat))) break; 
     work_dist = ext_gcd(NUM2DBL(lng), NUM2DBL(lat), NUM2INT(p_dotes[j-n].lng), NUM2INT(p_dotes[j-n].lat));
     //printf("\nL work DIST IS: %lf", work_dist);
@@ -131,6 +134,7 @@ static VALUE t_search(VALUE self, VALUE lng, VALUE lat)
     //printf("\nNC MIN DST: %lf", min_dist);
     //printf("\n\nM: %d, J: %d, GDC: %d", m,j,global_dot_count);
     //printf("\nEXPLORING DOT R: %d, %d", NUM2INT(p_dotes[m].lng),NUM2INT(p_dotes[m].lat));
+    cities_passed++;
     if ( min_dist < ext_gcd(0, NUM2DBL(lat), 0, NUM2INT(p_dotes[m].lat))) break; 
     work_dist = ext_gcd(NUM2DBL(lng), NUM2DBL(lat), NUM2INT(p_dotes[m].lng), NUM2INT(p_dotes[m].lat));
     //printf("\nR work DIST IS: %lf", work_dist);
@@ -153,10 +157,16 @@ static VALUE t_search(VALUE self, VALUE lng, VALUE lat)
   return (neigh.id == Qnil ? Qnil : neigh.id);
 }
 
+static VALUE t_passed(VALUE self)
+{
+  return INT2NUM(cities_passed);
+}
+
 void Init_nnsearcher() {
   NNSearcher = rb_define_class("NNSearcher", rb_cObject);
   rb_define_method(NNSearcher, "initialize", t_init, 1);
   rb_define_method(NNSearcher, "nearest_neighbour", t_search, 2);
+  rb_define_method(NNSearcher, "cities_passed", t_passed, 0);
 }
 
 void quickSortR(point_data* a, long N) {
