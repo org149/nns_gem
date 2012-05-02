@@ -4,6 +4,7 @@
 #include "math.h"
 #define PI 3.14159265358979323846
 #define MAX_DISTG 10000000.0
+#define DOTZOOM 10000.0
 
 typedef struct {
   VALUE id;
@@ -34,10 +35,10 @@ static VALUE t_init(VALUE self, VALUE dotes)
   int index = 0;
   if(GLOBAL_INIT){
     free(p_dotes);    
-    p_dotes = malloc((dot_count+10) * sizeof(point_data));
+    p_dotes = malloc((dot_count+15) * sizeof(point_data));
   }else{
     GLOBAL_INIT = 1;
-    p_dotes = malloc((dot_count+10) * sizeof(point_data));
+    p_dotes = malloc((dot_count+15) * sizeof(point_data));
   }
   while ( dot_count > 0 ){
     funcall_result = rb_ary_entry(dotes, index);
@@ -58,10 +59,7 @@ static VALUE t_init(VALUE self, VALUE dotes)
   }
   global_dot_count = counter;  
   quickSortR(p_dotes, counter - 1);
-  //printf("\nARY AFTER SORT: ");
-  //int ii;
-  //for(ii=0;ii<counter;ii++)
-  //  printf("\nARR[%d] = %lf, lng = %lf", ii, NUM2DBL(p_dotes[ii].lat), NUM2DBL(p_dotes[ii].lng) );
+
   return self;
 }
 
@@ -72,12 +70,11 @@ static double radians(double angle)
 
 static double ext_gcd(double lng1, double lat1, int lng2, int lat2)
 {
-  //printf("\nGOT lat lng plat plng == %lf, %lf, %d, %d", lat1, lng1, lat2, lng2);
   double lat1r = radians(lat1);
-  double lat2r = radians((double)lat2 / 10000.0);
+  double lat2r = radians((double)lat2 / DOTZOOM);
   double lng1r = radians(lng1);
-  double lng2r = radians((double)lng2 / 10000.0);
-  //printf("\nMAKE lat lng plat plng == %lf, %lf, %lf, %lf", lat1r, lng1r, lat2r, lng2r);
+  double lng2r = radians((double)lng2 / DOTZOOM);
+
   if( (lat1r - lat2r == 0) && (lng1r - lng2r == 0)){
     return 0.0;
   }else{
@@ -99,29 +96,22 @@ static VALUE t_search(VALUE self, VALUE lng, VALUE lat)
   int i;
   int j = 0;
   cities_passed = 0;
-  //int ii;
-  //printf("\nPRINT ARR:");
-  //for(ii=0;ii<=30;ii++)
-  //  printf("\nARR[%d] = %d", ii, NUM2INT(p_dotes[ii].lat));
-  // CityCoord.nnsearcher.nearest_neighbour 12,12
-  while((double)NUM2INT(p_dotes[j].lat)/10000.0 < (double)NUM2DBL(lat)){
-   //printf("\nCOMPARING: [%lf] [%lf]\n", ((double)NUM2INT(p_dotes[j].lat)/10000.0), (double)NUM2DBL(lat));
+
+  while((double)NUM2INT(p_dotes[j].lat) / DOTZOOM < (double)NUM2DBL(lat)){
    j++;
-  //printf("\n J = %d", j);
   if(j>=global_dot_count - 1) break;
   }
   int center = j;
-  int m; int n;
-  for(n=1;n<=j;n++){
-    //printf("\nNC MIN DST: %lf", min_dist);
-    //printf("\n\nN: %d, J: %d, GDC: %d", n,j,global_dot_count);
-    //printf("\nEXPLORING DOT L: %d, %d", NUM2INT(p_dotes[j-n].lng),NUM2INT(p_dotes[j-n].lat));
-    cities_passed++;
+  int m; 
+  int n;
+  for( n=1; n<=j; n++){
+
+    cities_passed = cities_passed + 1;
     if ( min_dist < ext_gcd(0, NUM2DBL(lat), 0, NUM2INT(p_dotes[j-n].lat))) break; 
     work_dist = ext_gcd(NUM2DBL(lng), NUM2DBL(lat), NUM2INT(p_dotes[j-n].lng), NUM2INT(p_dotes[j-n].lat));
-    //printf("\nL work DIST IS: %lf", work_dist);
+
     if(work_dist < min_dist){
-      //printf("  >> SETTING TO MINIMAL");
+
       min_dist = work_dist;
       neigh_l = p_dotes[j-n];
     }
@@ -130,15 +120,12 @@ static VALUE t_search(VALUE self, VALUE lng, VALUE lat)
   min_dist = MAX_DISTG;
   for(m=j;m<global_dot_count;m++)
   {
-    //printf("\nNC MIN DST: %lf", min_dist);
-    //printf("\n\nM: %d, J: %d, GDC: %d", m,j,global_dot_count);
-    //printf("\nEXPLORING DOT R: %d, %d", NUM2INT(p_dotes[m].lng),NUM2INT(p_dotes[m].lat));
+
     cities_passed++;
     if ( min_dist < ext_gcd(0, NUM2DBL(lat), 0, NUM2INT(p_dotes[m].lat))) break; 
     work_dist = ext_gcd(NUM2DBL(lng), NUM2DBL(lat), NUM2INT(p_dotes[m].lng), NUM2INT(p_dotes[m].lat));
-    //printf("\nR work DIST IS: %lf", work_dist);
+
     if(work_dist < min_dist){
-      //printf("  >> SETTING TO MINIMAL");
       min_dist = work_dist;
       neigh_r = p_dotes[m];
     }
@@ -158,8 +145,12 @@ static VALUE t_search(VALUE self, VALUE lng, VALUE lat)
 
 static VALUE t_passed(VALUE self)
 {
-  //printf("PASSED: %d", cities_passed);
-  return INT2NUM(cities_passed);
+  return INT2NUM( cities_passed );
+}
+
+static VALUE t_globaldot(VALUE self)
+{
+  return INT2NUM( global_dot_count );
 }
 
 void Init_nnsearcher() {
@@ -167,24 +158,22 @@ void Init_nnsearcher() {
   rb_define_method(NNSearcher, "initialize", t_init, 1);
   rb_define_method(NNSearcher, "nearest_neighbour", t_search, 2);
   rb_define_method(NNSearcher, "cities_passed", t_passed, 0);
+  rb_define_method(NNSearcher, "global_dot_count", t_globaldot, 0);
 }
 
-void quickSortR(point_data* a, long N) {
-  //int ii;
-  //printf("\nPRINT ARR:");
-  //for(ii=0;ii<=N;ii+=20)
-  //  printf("\nARR[%d] = %d", ii, NUM2INT(a[ii].lat));
+void quickSortR(point_data* a, long N) 
+{
   long i = 0, j = N; 		
   point_data temp, p;
   p = a[ N >> 1 ];		
   do {
-    while ( NUM2INT(a[i].lat) < NUM2INT(p.lat) ) i++;
-    while ( NUM2INT(a[j].lat) > NUM2INT(p.lat) ) j--;
+    while ( NUM2INT( a[i].lat ) < NUM2INT( p.lat ) ) i++;
+    while ( NUM2INT( a[j].lat ) > NUM2INT( p.lat ) ) j--;
     if (i <= j) {
       temp = a[i]; a[i] = a[j]; a[j] = temp;
       i++; j--;
     }
-  } while ( i<=j );
+  } while ( i <= j );
   if ( j > 0 ) quickSortR(a, j);
   if ( N > i ) quickSortR(a+i, N-i);
 }
