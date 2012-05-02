@@ -36,10 +36,10 @@ static VALUE t_init(VALUE self, VALUE dotes)
   if( dot_count > 0 ){
     if(GLOBAL_INIT){
       free(p_dotes);    
-      p_dotes = malloc((dot_count+15) * sizeof(point_data));
+      p_dotes = malloc((dot_count) * sizeof(point_data));
     }else{
       GLOBAL_INIT = 1;
-      p_dotes = malloc((dot_count+15) * sizeof(point_data));
+      p_dotes = malloc((dot_count) * sizeof(point_data));
     }
   }
   while ( dot_count > 0 ){
@@ -60,7 +60,7 @@ static VALUE t_init(VALUE self, VALUE dotes)
     }
   }
   global_dot_count = counter;  
-  if( dot_count > 0 ){
+  if( global_dot_count > 0 ){
     quickSortR(p_dotes, counter - 1);
   }
   return self;
