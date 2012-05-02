@@ -30,7 +30,9 @@ static VALUE t_init(VALUE self, VALUE dotes)
   VALUE funcall_result = Qnil;
   VALUE ary_count = Qnil;
   ary_count = rb_funcall(dotes, rb_intern("count"),0);
+  printf("BEFORE");
   int dot_count = NUM2INT(ary_count);
+  printf("AFTER %d", dot_count);   
   int counter = 0;
   int index = 0;
   if(GLOBAL_INIT){
