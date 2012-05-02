@@ -62,8 +62,9 @@ static VALUE t_init(VALUE self, VALUE dotes)
     }
   }
   global_dot_count = counter;  
-  quickSortR(p_dotes, counter - 1);
-
+  if( dot_count > 0 ){
+    quickSortR(p_dotes, counter - 1);
+  }
   return self;
 }
 
