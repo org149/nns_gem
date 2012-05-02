@@ -20,7 +20,7 @@ void quickSortR(point_data* a, long N);
 VALUE NNSearcher = Qnil;
 
 static point_data *p_dotes;
-int global_dot_count;
+int global_dot_count = 0;
 int GLOBAL_INIT = 0;
 int cities_passed = 0;
 
@@ -29,10 +29,8 @@ static VALUE t_init(VALUE self, VALUE dotes)
   VALUE dot = Qnil;
   VALUE funcall_result = Qnil;
   VALUE ary_count = Qnil;
-  printf("BEFORE");
   ary_count = rb_funcall(dotes, rb_intern("count"),0);
   int dot_count = NUM2INT(ary_count);
-  printf("AFTER %d", dot_count);   
   int counter = 0;
   int index = 0;
   if( dot_count > 0 ){
@@ -89,6 +87,9 @@ static double ext_gcd(double lng1, double lat1, int lng2, int lat2)
 
 static VALUE t_search(VALUE self, VALUE lng, VALUE lat)
 {
+  if( global_dot_count <= 0 ){
+    return Qnil;
+  }
   double min_dist = MAX_DISTG;
   double work_dist = 0.0;
   double nl_dist = MAX_DISTG; double nr_dist = MAX_DISTG;
