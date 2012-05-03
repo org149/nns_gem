@@ -74,14 +74,14 @@ static double radians(double angle)
 static double ext_gcd(double lng1, double lat1, int lng2, int lat2)
 {
   double lat1r = radians(lat1);
-  double lat2r = radians((double)lat2 / DOTZOOM);
+  double lat2r = radians((double)lat2 / (double)DOTZOOM);
   double lng1r = radians(lng1);
-  double lng2r = radians((double)lng2 / DOTZOOM);
+  double lng2r = radians((double)lng2 / (double)DOTZOOM);
 
   if( (lat1r - lat2r == 0) && (lng1r - lng2r == 0)){
     return 0.0;
   }else{
-    return acos( sin(lat1r)*sin(lat2r) + cos(lat1r)*cos(lat2r)*cos( (lng1r-lng2r) ) );
+    return (double)acos( sin(lat1r)*sin(lat2r) + cos(lat1r)*cos(lat2r)*cos( (lng1r-lng2r) ) );
   }
 }
 
@@ -103,7 +103,7 @@ static VALUE t_search(VALUE self, VALUE lng, VALUE lat)
   int j = 0;
   cities_passed = 0;
 
-  while((double)NUM2INT(p_dotes[j].lat) / DOTZOOM < (double)NUM2DBL(lat)){
+  while((double)NUM2INT(p_dotes[j].lat) / (double)DOTZOOM < (double)NUM2DBL(lat)){
    j++;
   if(j>=global_dot_count - 1) break;
   }
@@ -111,13 +111,10 @@ static VALUE t_search(VALUE self, VALUE lng, VALUE lat)
   int m; 
   int n;
   for( n=1; n<=j; n++){
-
     cities_passed = cities_passed + 1;
     if ( min_dist < ext_gcd(0, NUM2DBL(lat), 0, NUM2INT(p_dotes[j-n].lat))) break; 
     work_dist = ext_gcd(NUM2DBL(lng), NUM2DBL(lat), NUM2INT(p_dotes[j-n].lng), NUM2INT(p_dotes[j-n].lat));
-
-    if(work_dist < min_dist){
-
+    if(work_dist <= min_dist){
       min_dist = work_dist;
       neigh_l = p_dotes[j-n];
     }
@@ -126,18 +123,15 @@ static VALUE t_search(VALUE self, VALUE lng, VALUE lat)
   min_dist = MAX_DISTG;
   for(m=j;m<global_dot_count;m++)
   {
-
-    cities_passed++;
+    cities_passed = cities_passed + 1;
     if ( min_dist < ext_gcd(0, NUM2DBL(lat), 0, NUM2INT(p_dotes[m].lat))) break; 
     work_dist = ext_gcd(NUM2DBL(lng), NUM2DBL(lat), NUM2INT(p_dotes[m].lng), NUM2INT(p_dotes[m].lat));
-
     if(work_dist < min_dist){
       min_dist = work_dist;
       neigh_r = p_dotes[m];
     }
   }
   if(neigh_r.id != Qnil) nr_dist = min_dist;
-
   if(nl_dist >= nr_dist)
   {
     neigh = neigh_r;
